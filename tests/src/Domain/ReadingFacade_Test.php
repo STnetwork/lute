@@ -35,13 +35,13 @@ final class ReadingFacade_Test extends DatabaseTestBase
         return array_merge([], ...$this->facade->getParagraphs($t));
     }
 
-    public function test_get_sentences_no_sentences() {
+    public function test_get_sentences_no_sentences() {  // V3-port: DONE render_test_cases.yml
         $t = new Text();
         $sentences = $this->getSentences($t);
         $this->assertEquals(0, count($sentences), "nothing for new text");
     }
 
-    public function test_get_sentences_with_text()
+    public function test_get_sentences_with_text()  // V3-port: DONE render_test_cases.yml
     {
         $t = $this->make_text("Hola", "Hola. Adios amigo.", $this->spanish);
         $sentences = $this->getSentences($t);
@@ -49,19 +49,9 @@ final class ReadingFacade_Test extends DatabaseTestBase
     }
 
     /**
-     * @group sentenceeos
-     */
-    public function test_get_sentences_reparses_text_if_no_sentences()
-    {
-        $t = $this->make_text("Hola", "Hola. Adios amigo.", $this->spanish);
-        $sentences = $this->getSentences($t);
-        $this->assertEquals(2, count($sentences), "reparsed");
-    }
-
-    /**
      * @group renderablesentences
      */
-    public function test_get_renderable_sentences()
+    public function test_get_renderable_sentences()  // V3-port: DONE render_test_cases.yml
     {
         $this->addTerms($this->spanish, [ "Un gato", 'lista', "tiene una", 'listo' ]);
         $content = "Hola tengo un gato.  No tengo una lista.\nElla tiene una bebida.";
@@ -74,7 +64,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group dtoflash
      */
-    public function test_loadDTO_removes_term_flash_message()
+    public function test_loadDTO_removes_term_flash_message()  // V3-port: DONE
     {
         $t = $this->addTerms($this->spanish, 'term')[0];
         $t->setFlashMessage('hello');
@@ -89,7 +79,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group associations
      */
-    public function test_saving_term_associates_textitems()
+    public function test_saving_term_associates_textitems()  // V3-port: DONE render_test_cases.yml
     {
         $content = "Hola tengo un gato.";
         $text = $this->make_text("Hola", $content, $this->spanish);
@@ -103,7 +93,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group associations
      */
-    public function test_removing_term_disassociates_textitems()
+    public function test_removing_term_disassociates_textitems()  // V3-port: DONE skipping not useful
     {
         $content = "Hola tengo un gato.";
         $text = $this->make_text("Hola", $content, $this->spanish);
@@ -118,7 +108,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     }
 
 
-    public function test_mark_unknown_as_known_creates_words_and_updates_ui()
+    public function test_mark_unknown_as_known_creates_words_and_updates_ui()  // V3-port: DONE readering.feature
     {
         $this->addTerms($this->spanish, [ 'lista' ]);
 
@@ -143,7 +133,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group overlappingterms
      */
-    public function test_overlapping_terms_displayed_correctly()
+    public function test_overlapping_terms_displayed_correctly()  // V3-port: DONE render_test_cases.yml
     {
         [ $t1, $t2 ] = $this->addTerms($this->spanish, [ 'tengo un', 'un gato' ]);
         $t1->setTranslation('I have');
@@ -162,7 +152,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group overlappingterms
      */
-    public function test_NOT_overlapping_terms_displayed_correctly()
+    public function test_NOT_overlapping_terms_displayed_correctly()  // V3-port: DONE render_test_cases.yml
     {
         [ $t1, $t2 ] = $this->addTerms($this->spanish, [ 'tengo un', 'un gato' ]);
         $t1->setTranslation('I have');
@@ -181,7 +171,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group overlappingterms
      */
-    public function test_chain_of_overlapping_terms_displayed_correctly()
+    public function test_chain_of_overlapping_terms_displayed_correctly()  // V3-port: DONE render_test_cases.yml
     {
         [ $t1, $t2, $t3 ] = $this->addTerms($this->spanish, [ 'tengo un', 'un gato', 'gato bueno' ]);
         $t1->setTranslation('I have');
@@ -204,7 +194,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group overlappingterms
      */
-    public function test_chain_of_overlapping_terms_and_hidden_one_displayed_correctly()
+    public function test_chain_of_overlapping_terms_and_hidden_one_displayed_correctly()  // V3-port: DONE render_test_cases.yml
     {
         [ $t1, $t2, $t3 ] = $this->addTerms($this->spanish, [ 'tengo un gato', 'gato bueno', 'un gato bueno y gordo' ]);
         $t1->setTranslation('I have a cat');
@@ -228,7 +218,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     // hadn't been associated to the existing word record, and the
     // facade tried to create the _same_ word on marking this textitem2s as
     // well-known.
-    public function test_mark_unknown_as_known_works_if_term_already_exists()
+    public function test_mark_unknown_as_known_works_if_term_already_exists()  // V3-port: DONE rendering.feature
     {
         $content = "Hola tengo un perro.";
         $t = $this->make_text("Hola", $content, $this->spanish);
@@ -240,7 +230,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
         $this->assert_rendered_text_equals($t, "Hola(99)/ /tengo(99)/ /un(99)/ /perro(1)/.");
     }
 
-    public function test_update_status_creates_words_and_updates_textitems()
+    public function test_update_status_creates_words_and_updates_textitems()  // V3-port: DONE rendering.feature
     {
         $this->load_spanish_words();
 
@@ -273,7 +263,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
 
     // Prod bug: setting all to known, and then selecting to create a
     // multi-word term, didn't return that new term.
-    public function test_create_multiword_term_when_all_known() {
+    public function test_create_multiword_term_when_all_known() {  // V3-port: DONE render.feature
         $t = $this->make_text("Hola", "Ella tiene una bebida.", $this->spanish);
         $this->facade->mark_unknowns_as_known($t);
 
@@ -298,7 +288,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group prodbugknown
      */
-    public function test_marking_as_known_updates_other_texts() {
+    public function test_marking_as_known_updates_other_texts() {  // V3-port: DONE render.feature
         $bebida_text = $this->make_text("Bebida", "Ella tiene una bebida.", $this->spanish);
         $gato_text = $this->make_text("Gato", "Ella tiene un gato.", $this->spanish);
         $this->facade->mark_unknowns_as_known($bebida_text);
@@ -316,7 +306,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-    public function test_update_multiword_textitem_replaces_correct_item() {
+    public function test_update_multiword_textitem_replaces_correct_item() {  // V3-port: DONE - ignore, not valid
         $text = $this->make_text("Hola", "Ella tiene una bebida.", $this->spanish);
         $this->assert_rendered_text_equals($text, "Ella/ /tiene/ /una/ /bebida/.");
 
@@ -330,7 +320,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-    public function test_update_multiword_textitem_with_numbers_replaces_correct_item() {
+    public function test_update_multiword_textitem_with_numbers_replaces_correct_item() {  // V3-port: DONE render_test_cases.yml
         $text = $this->make_text("Hola", "121 111 123 \"Ella tiene una bebida\".", $this->spanish);
 
         $this->assert_rendered_text_equals($text, "121 111 123 \"/Ella/ /tiene/ /una/ /bebida/\".");
@@ -346,7 +336,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-    public function test_update_multiword_textitem_with_numbers_in_middle() {
+    public function test_update_multiword_textitem_with_numbers_in_middle() {  // V3-port: DONE render_test_cases.yml
         $text = $this->make_text("Hola", "Ella tiene 1234 una bebida.", $this->spanish);
         $this->assert_rendered_text_equals($text, "Ella/ /tiene/ 1234 /una/ /bebida/.");
 
@@ -361,7 +351,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group prodbugnono
      */
-    public function test_prod_bug_no_no() {
+    public function test_prod_bug_no_no() {  // V3-port: DONE rendering.feature
         $text = $this->make_text("Hola", "Hasta cuando no juega, pero bueno.", $this->spanish);
         $this->assert_rendered_text_equals($text, "Hasta/ /cuando/ /no/ /juega/, /pero/ /bueno/.");
         $this->facade->mark_unknowns_as_known($text);
@@ -394,7 +384,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-    public function test_japanese_multiword_stays_in_correct_place() {
+    public function test_japanese_multiword_stays_in_correct_place() {  // V3-port: DONE in features
         if (!App\Parse\JapaneseParser::MeCab_installed()) {
             $this->markTestSkipped('Skipping test, missing MeCab.');
         }
@@ -413,7 +403,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-    public function test_japanese_multiword_demo_story() {
+    public function test_japanese_multiword_demo_story() {  // V3-port: DONE rendering.feature
         if (!App\Parse\JapaneseParser::MeCab_installed()) {
             $this->markTestSkipped('Skipping test, missing MeCab.');
         }
@@ -434,7 +424,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-     public function test_japanese_multiword_with_numbers() {
+     public function test_japanese_multiword_with_numbers() {  // V3-port: DONE render features
         if (!App\Parse\JapaneseParser::MeCab_installed()) {
             $this->markTestSkipped('Skipping test, missing MeCab.');
         }
@@ -450,7 +440,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group rumissing
      */
-    public function test_japanese_ru_missing() {
+    public function test_japanese_ru_missing() {  // V3-port: DONE rendering features
         if (!App\Parse\JapaneseParser::MeCab_installed()) {
             $this->markTestSkipped('Skipping test, missing MeCab.');
         }
@@ -466,7 +456,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reload
      */
-    public function test_update_textitem_with_parent() {
+    public function test_update_textitem_with_parent() {  // V3-port: DONE render.feature
         $text = $this->make_text("Tener", "tiene y tener.", $this->spanish);
         $this->assert_rendered_text_equals($text, "tiene/ /y/ /tener/.");
 
@@ -486,7 +476,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reloaddoe
      */
-    public function test_prod_bug_update_doe_with_parent() {
+    public function test_prod_bug_update_doe_with_parent() {  // V3-port: DONE rendering.feature
         $content = "tiene y tener uno.";
         $text = $this->make_text("issue6", $content, $this->spanish);
         $this->assert_rendered_text_equals($text, "tiene/ /y/ /tener/ /uno/.");
@@ -505,7 +495,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group v2knowns
      */
-    public function test_v2_fix_caps_words_not_marked_correctly() {
+    public function test_v2_fix_caps_words_not_marked_correctly() {  // V3-port: DONE rendering.feature
         $text = $this->make_text("v2", "Á la una. Éste fué hallado. A la una.", $this->spanish);
 
         $this->facade->mark_unknowns_as_known($text);
@@ -517,7 +507,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group issue10
      */
-    public function test_multiwords_should_highlight_in_new_text() {
+    public function test_multiwords_should_highlight_in_new_text() {  // V3-port: DONE rendering.feature
         $text = $this->make_text("AP1", "Tienes un gato.", $this->spanish);
         $tid = $text->getID();
         $dto = $this->facade->loadDTO($this->spanish, 'un gato');
@@ -534,7 +524,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group issue10_new
      */
-    public function test_associated_press_multiwords_should_highlight_in_new_text() {
+    public function test_associated_press_multiwords_should_highlight_in_new_text() {  // V3-port: DONE rendering.feature
         $ap1 = $this->make_text("AP1", "Abc wrote to the Associated Press about it.", $this->english);
         $ap2 = $this->make_text("AP2", "Def wrote to the Associated Press about it.", $this->english);
 
@@ -553,7 +543,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group issue71_turkish
      */
-    public function test_turkish_downcasing_handled_correctly() {
+    public function test_turkish_downcasing_handled_correctly() {  // V3-port: DONE in rendering.feature
         $tr = $this->turkish;
         $text = $this->make_text("Downcasing_with_funny_i", "ışık için Işık İçin.", $tr);
         $this->assert_rendered_text_equals($text, "ışık/ /için/ /Işık/ /İçin/.");
@@ -572,7 +562,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group classicalchinesehighlight
      */
-    public function test_classical_chinese_first_char_bug() {
+    public function test_classical_chinese_first_char_bug() {  // V3-port: DONE features
         $cc = $this->classicalchinese;
         $text = $this->make_text("t1", "關關。", $cc);
         $this->assert_rendered_text_equals($text, "關/關/。");
@@ -594,7 +584,7 @@ final class ReadingFacade_Test extends DatabaseTestBase
     /**
      * @group reloadcurr
      */
-    public function test_update_textitem_with_parent_and_accent() {
+    public function test_update_textitem_with_parent_and_accent() {  // V3-port: DONE rendering.feature
         $text = $this->make_text("Que", "Tengo que y qué.", $this->spanish);
         $this->assert_rendered_text_equals($text, "Tengo/ /que/ /y/ /qué/.");
 
@@ -610,32 +600,4 @@ final class ReadingFacade_Test extends DatabaseTestBase
         $this->assert_rendered_text_equals($text, "Tengo(1)/ /que(1)/ /y/ /qué/.");
     }
 
-
-    /**
-     * @group paging
-     */
-    public function test_get_prev_next_stays_in_current_book() {
-        $text = "Here is some text.  And some more. And some more now.";
-        $b = Book::makeBook('test', $this->english, $text, 3);
-        $this->book_repo->save($b, true);
-        $texts = $b->getTexts();
-        $this->assertEquals(count($texts), 3, '3 pages');
-
-        $s1 = $texts[0];
-        $s2 = $texts[1];
-        $s3 = $texts[2];
-        
-        [ $prev, $next ] = $this->facade->get_prev_next($s1);
-        $this->assertTrue($prev == null, 's1 prev');
-        $this->assertEquals($next->getID(), $s2->getID(), 's1 next');
-
-        [ $prev, $next ] = $this->facade->get_prev_next($s2);
-        $this->assertEquals($prev->getID(), $s1->getID(), 's2 prev');
-        $this->assertEquals($next->getID(), $s3->getID(), 's2 next');
-
-        [ $prev, $next ] = $this->facade->get_prev_next($s3);
-        $this->assertEquals($prev->getID(), $s2->getID(), 's3 prev');
-        $this->assertTrue($next == null, 's3 next');
-    }
-    
 }

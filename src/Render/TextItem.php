@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Render;
+
+use App\Entity\Status;
 
 class TextItem
 {

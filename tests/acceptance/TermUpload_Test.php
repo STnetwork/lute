@@ -2,15 +2,8 @@
 
 namespace App\Tests\acceptance;
 
-use App\Entity\Language;
-
 class TermUpload_Test extends AcceptanceTestBase
 {
-
-    public function childSetUp(): void
-    {
-        $this->load_languages();
-    }
 
     ///////////////////////
     // Tests
@@ -18,7 +11,7 @@ class TermUpload_Test extends AcceptanceTestBase
     /**
      * @group acc_uploadterms
      */
-    public function test_upload_terms_valid_file(): void
+    public function test_upload_terms_valid_file(): void  // V3-port: DONE
     {
         $wait = function() { usleep(200 * 1000); };  // hack
         $this->client->request('GET', '/');
@@ -49,7 +42,7 @@ class TermUpload_Test extends AcceptanceTestBase
     /**
      * @group acc_uploadterms_varcols
      */
-    public function test_upload_terms_valid_file_variable_columns(): void
+    public function test_upload_terms_valid_file_variable_columns(): void  // V3-port: DONE - skipping, redundant
     {
         $this->client->request('GET', '/');
         $this->client->clickLink('Import Terms');
@@ -74,7 +67,7 @@ class TermUpload_Test extends AcceptanceTestBase
     /**
      * @group acc_uploadterms_badfile
      */
-    public function test_upload_terms_invalid_file(): void
+    public function test_upload_terms_invalid_file(): void  // V3-port: DONE - skipping, redundant
     {
         $this->client->request('GET', '/');
         $this->client->clickLink('Import Terms');
@@ -90,12 +83,8 @@ class TermUpload_Test extends AcceptanceTestBase
      * @group issue50
      * valid file rejected
      */
-    public function test_issue_50(): void
+    public function test_issue_50(): void  // V3-port: DONE
     {
-        $cc = Language::makeClassicalChinese();
-        $cc->setLgName('Chinese'); // used in the import file.
-        $this->language_repo->save($cc, true);
-
         $this->client->request('GET', '/');
         $this->client->clickLink('Import Terms');
         $wait = function() { usleep(200 * 1000); };  // hack
@@ -112,8 +101,8 @@ class TermUpload_Test extends AcceptanceTestBase
         $ctx = $this->getTermContext();
         $ctx->listingShouldContain(
             'two terms imported',
-            [ '; 爱; ; love; Chinese; HSK1; New (1)',
-              '; 爱好; ; hobby; Chinese; HSK1; New (1)' ]);
+            [ '; 爱; ; love; Classical Chinese; HSK1; New (1)',
+              '; 爱好; ; hobby; Classical Chinese; HSK1; New (1)' ]);
     }
 
 }

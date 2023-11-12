@@ -139,7 +139,7 @@
     ],
     "test:group": [
       "composer db:create:test",
-      "NO_BING_IMAGES=true PANTHER_NO_HEADLESS=true PANTHER_DEVTOOLS=0 SYMFONY_DEPRECATIONS_HELPER=disabled ./bin/phpunit -v -c phpunit.xml.dist --group "
+      "NO_BING_IMAGES=true PANTHER_DEVTOOLS=0 SYMFONY_DEPRECATIONS_HELPER=disabled ./bin/phpunit -v -c phpunit.xml.dist --group "
     ],
     "test:validateschema": [
       "bin/console doctrine:schema:validate --skip-sync"
@@ -151,6 +151,12 @@
       "bin/console doctrine:schema:validate --skip-sync  # <-- hash suppresses any arguments",
       "composer test:src",
       "composer test:accept"
+    ],
+    "dev:portstats": [
+      "composer dev:find V3-port | grep TODO | grep -v README",
+      "echo --------------------------------",
+      "composer dev:find V3-port | grep DONE | wc -l",
+      "composer dev:find V3-port | grep TODO | grep -v README | wc -l"
     ],
     "dev:find": "./utils/findstring.sh",
     "dev:finddump": "./utils/finddump.sh",
@@ -207,7 +213,8 @@
     "test:group": "Run tests with a given '@group xxxx' annotation",
     "test:full": "Create the test db, check orm mappings, and run all tests",
     "dev:data:load": "Abuse the testing system to load the dev db with some data.",
-    "dev:data:clear": "Abuse the testing system to wipe the dev db."
+    "dev:data:clear": "Abuse the testing system to wipe the dev db.",
+    "dev:portstats": "Show tests ported to v3 python and to-dos."
   },
   "conflict": {
     "symfony/symfony": "*"

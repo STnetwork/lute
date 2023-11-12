@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use App\Utils\Connection;
 use App\Entity\Language;
 use App\Repository\LanguageRepository;
 use App\Entity\Book;
@@ -99,12 +100,8 @@ class DemoDataLoader {
         }
         $ddl->loadDemoStories();
 
-        $term = new Term();
-        $term->setLanguage($lang_repo->findOneByName('English'));
-        $term->setText("your local environment file");
-        $term->setStatus(3);
-        $term->setTranslation("This is \".env\", your personal file in the project root folder :-)");
-        $term_service->add($term, true);
+        $conn = Connection::getFromEnvironment();
+        $conn->query("insert or ignore into settings (StKey, StValue) values ('IsDemoData', 1)");
     }
 
 }

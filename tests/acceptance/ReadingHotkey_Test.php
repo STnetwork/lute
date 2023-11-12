@@ -2,10 +2,6 @@
 
 namespace App\Tests\acceptance;
 
-require_once __DIR__ . '/../db_helpers.php';
-
-use App\Utils\DemoDataLoader;
-use App\Domain\TermService;
 use App\Tests\acceptance\Contexts\ReadingContext;
 use Facebook\WebDriver\WebDriverKeys;
 
@@ -26,12 +22,10 @@ class ReadingHotkey_Test extends AcceptanceTestBase
 
     public function childSetUp(): void
     {
-        $this->load_languages();
-
         // Note using 'full' and 'ice' here b/c the test setup for
         // english has single-character-then-point as a regex parsing
         // exception!
-        $this->make_text("Test", "a b c d e full. g h ice.", $this->english);
+        $this->make_text("Test", "a b c d e full. g h ice.", $this->englishid);
         $this->client->request('GET', '/');
         $this->client->waitForElementToContain('body', 'Test');
         $this->client->clickLink('Test');
@@ -62,15 +56,19 @@ class ReadingHotkey_Test extends AcceptanceTestBase
             \PHPUnit\Framework\Assert::assertEquals($expected, $actual, $message);
         }
     }
-    
-    public function test_hotkeys(): void {
+
+    /**
+     * @group hotkeys
+     */
+    public function test_hotkeys(): void {  // V3-port: DONE - not all of it, but enough.
         // This test just wipes terms from the database and reloads
         // the book being tested.  It's a bit hacky (I prefer to have
         // clean state for every distinct test case), but it's faster
         // than doing a full childSetUp() for each scenario.  There
         // may be a better way to do this.
         $reset = function() {
-            \DbHelpers::exec_sql('delete from words');
+            $this->client->request('GET', '/dangerous/delete_all_terms');
+            $this->client->waitForElementToContain('body', 'ALL TERMS DELETED');
             $this->client->request('GET', $this->book_url);
             $this->client->waitForElementToContain('body', 'full');
 
@@ -96,7 +94,7 @@ class ReadingHotkey_Test extends AcceptanceTestBase
         $hover = function($word) {
             $wid = $this->ctx->getWordCssID($word);
             $this->client->getMouse()->mouseMoveTo($wid);
-            usleep(100 * 1000);
+            usleep(300 * 1000);
         };
         $click = function($word) {
             $this->ctx->clickReadingWord($word);
@@ -110,7 +108,7 @@ class ReadingHotkey_Test extends AcceptanceTestBase
         };
         $hotkey = function($key) {
             $this->client->getKeyboard()->sendKeys($key);
-            usleep(300 * 1000);
+            usleep(500 * 1000);
         };
         $wait = function($millis = 100) {
             usleep($millis * 1000);
@@ -136,10 +134,20 @@ class ReadingHotkey_Test extends AcceptanceTestBase
         // Fail fast-ish if not qwerty layout.  (I use Dvorak layout,
         // if sendKeys sends the key of the qwerty physical keyboard
         // layout ... very.)
+        $get_hotkey_value = function($envkey, $default) {
+            if (array_key_exists($envkey, $_ENV))
+                return $_ENV[$envkey];
+            return $default;
+        };
+
+        $hotkey_w = $get_hotkey_value('HOTKEY_WELLKNOWN', 'w');
+        $hotkey_copyterm = $get_hotkey_value('HOTKEY_COPYTERM', 'c');
+        $hotkey_copypara = $get_hotkey_value('HOTKEY_COPYPARA', 'C');
+
         $reset();
         $hover('a');
         $this->assert_classes([ 'wordhover' => 'a']);
-        $hotkey('w');
+        $hotkey($hotkey_w);
         $this->assert_classes([ 'status99' => 'a' ], 'well-known');
 
         // Hovered gets the status update.
@@ -170,14 +178,14 @@ class ReadingHotkey_Test extends AcceptanceTestBase
         // Hovered gets the copy.
         $reset();
         $hover('b');
-        $hotkey('c');
+        $hotkey($hotkey_copyterm);
         $wait(1000); // Wait for flash to end ... :-(
         $this->assert_classes([ 'wascopied' => 'a b c d e full' ], 'hovered word gets the copy');
 
         // Hovered para copy
         $reset();
         $hover('b');
-        $hotkey('C');
+        $hotkey($hotkey_copypara);
         $wait(1000); // Wait for flash to end ... :-(
         $this->assert_classes([ 'wascopied' => 'a b c d e full g h ice' ], 'hovered copy');
 
@@ -185,7 +193,7 @@ class ReadingHotkey_Test extends AcceptanceTestBase
         $reset();
         $click('b');
         $hover('ice');
-        $hotkey('c');
+        $hotkey($hotkey_copyterm);
         $wait(1000); // Wait for flash to end ... :-(
         $this->assert_classes([ 'wascopied' => 'a b c d e full' ], 'clicked word gets the copy');
 

@@ -19,34 +19,28 @@ class Text
     #[ORM\Column(name: 'TxID', type: Types::SMALLINT)]
     private ?int $TxID = null;
 
-    #[ORM\ManyToOne(targetEntity: 'Language', fetch: 'EAGER')]
-    #[ORM\JoinColumn(name: 'TxLgID', referencedColumnName: 'LgID', nullable: false)]
-    private ?Language $language = null;
-
     #[ORM\Column(name: 'TxText', type: Types::TEXT)]
     private string $TxText = '';
 
     #[ORM\Column(name: 'TxOrder', type: Types::SMALLINT)]
     private int $TxOrder = 1;
 
-    #[ORM\Column(name: 'TxAudioURI', length: 200, nullable: true)]
-    private ?string $TxAudioURI = null;
-
-    #[ORM\Column(name: 'TxSourceURI', length: 1000, nullable: true)]
-    private ?string $TxSourceURI = null;
-
     #[ORM\Column(name: 'TxReadDate', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTime $TxReadDate = null;
-
-    #[ORM\Column(name: 'TxArchived')]
-    private bool $TxArchived = false;
 
     #[ORM\ManyToOne(inversedBy: 'Texts')]
     #[ORM\JoinColumn(name: 'TxBkID', referencedColumnName: 'BkID', nullable: false)]
     private ?Book $book = null;
 
+    #[ORM\OneToMany(mappedBy: 'text', targetEntity: Sentence::class, orphanRemoval: true, cascade: ['persist'], fetch: 'EXTRA_LAZY')]
+    #[ORM\OrderBy(['SeOrder' => 'ASC'])]
+    #[ORM\JoinColumn(name: 'SeTxID', referencedColumnName: 'TxID', nullable: false)]
+    private Collection $Sentences;
+
+
     public function __construct()
     {
+        $this->Sentences = new ArrayCollection();
     }
 
 
@@ -71,43 +65,7 @@ class Text
     public function setText(string $TxText): self
     {
         $this->TxText = $TxText;
-
-        return $this;
-    }
-
-    public function getAudioURI(): ?string
-    {
-        return $this->TxAudioURI;
-    }
-
-    public function setAudioURI(?string $TxAudioURI): self
-    {
-        $this->TxAudioURI = $TxAudioURI;
-
-        return $this;
-    }
-
-    public function getSourceURI(): ?string
-    {
-        return $this->TxSourceURI;
-    }
-
-    public function setSourceURI(?string $TxSourceURI): self
-    {
-        $this->TxSourceURI = $TxSourceURI;
-
-        return $this;
-    }
-
-    public function isArchived(): bool
-    {
-        return $this->TxArchived;
-    }
-
-    public function setArchived(bool $TxArchived): self
-    {
-        $this->TxArchived = $TxArchived;
-
+        $this->loadSentences();
         return $this;
     }
 
@@ -124,19 +82,7 @@ class Text
 
     public function getLanguage(): ?Language
     {
-        return $this->language;
-    }
-
-    public function setLanguage(Language $language): self
-    {
-        $this->language = $language;
-
-        return $this;
-    }
-
-    public function parse(): void
-    {
-        $this->getLanguage()->parse([$this]);
+        return $this->getBook()->getLanguage();
     }
 
     public function getBook(): ?Book
@@ -159,6 +105,87 @@ class Text
     public function setReadDate(?DateTime $dt): self
     {
         $this->TxReadDate = $dt;
+        $this->loadSentences();
         return $this;
     }
+
+    /** Sentences. */
+
+    private function makeSentenceFromTokens($tokens, $senumber) {
+        $ptstrings = array_map(fn($t) => $t->token, $tokens);
+
+        $zws = mb_chr(0x200B); // zero-width space.
+        $s = implode($zws, $ptstrings);
+        $s = trim($s, ' ');
+
+        // The zws is added at the start and end of each
+        // sentence, to standardize the string search when
+        // looking for terms.
+        $s = $zws . $s . $zws;
+
+        $sentence = new Sentence();
+        $sentence->setSeOrder($senumber);
+        $sentence->setSeText($s);
+        return $sentence;
+    }
+
+
+    private function loadSentences() {
+        foreach ($this->getSentences() as $s)
+            $this->removeSentence($s);
+
+        if ($this->TxReadDate == null)
+            return;
+
+        $lang = $this->getLanguage();
+        $parser = $lang->getParser();
+        $parsedtokens = $parser->getParsedTokens($this->TxText, $lang);
+
+        $curr_sentence_tokens = [];
+        $sentence_number = 1;
+
+        foreach ($parsedtokens as $pt) {
+            $curr_sentence_tokens[] = $pt;
+            if ($pt->isEndOfSentence) {
+                $se = $this->makeSentenceFromTokens($curr_sentence_tokens, $sentence_number);
+                $this->addSentence($se);
+
+                // Reset for next sentence.
+                $curr_sentence_tokens = [];
+                $sentence_number += 1;
+            }
+        }
+
+        // Add any stragglers.
+        if (count($curr_sentence_tokens) > 0) {
+            $se = $this->makeSentenceFromTokens($curr_sentence_tokens, $sentence_number);
+            $this->addSentence($se);
+        }
+    }
+
+    /**
+     * @return Collection<int, Sentence>
+     */
+    public function getSentences(): Collection
+    {
+        return $this->Sentences;
+    }
+
+    private function addSentence(Sentence $sentence): self
+    {
+        if (!$this->Sentences->contains($sentence)) {
+            $this->Sentences->add($sentence);
+            $sentence->setText($this);
+        }
+        return $this;
+    }
+
+    private function removeSentence(Sentence $sentence): self
+    {
+        if ($this->Sentences->removeElement($sentence)) {
+            $sentence->setText(null);
+        }
+        return $this;
+    }
+
 }

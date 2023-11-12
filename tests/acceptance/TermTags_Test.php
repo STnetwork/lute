@@ -5,18 +5,13 @@ namespace App\Tests\acceptance;
 class TermTags_Test extends AcceptanceTestBase
 {
 
-    public function childSetUp(): void
-    {
-        $this->load_languages();
-    }
-
     ///////////////////////
     // Tests
 
     /**
      * @group termtagsmoke
      */
-    public function test_termtag_smoke_test(): void
+    public function test_termtag_smoke_test(): void  // V3-port: DONE - skipping - don't even know if this is used.
     {
         $this->client->request('GET', '/');
         $this->client->clickLink('Term Tags');
@@ -28,7 +23,7 @@ class TermTags_Test extends AcceptanceTestBase
         $this->client->clickLink('Create new');
         $ctx = $this->getTermContext();
         $updates = [
-            'language' => $this->spanish->getLgID(),
+            'language' => $this->spanishid,
             'Text' => 'gato',
             'Translation' => 'cat',
             'Tags' => [ 'sometag' ]

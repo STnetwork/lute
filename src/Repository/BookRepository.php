@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Book;
 use App\Domain\BookStats;
+use App\Utils\DataTablesSqliteQuery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -32,18 +33,8 @@ class BookRepository extends ServiceEntityRepository
     public function save(Book $entity): void
     {
         $isnew = ($entity->getID() == null);
-        if ($entity->isArchived()) {
-            foreach ($entity->getTexts() as $t)
-                $t->setArchived(true);
-        }
-
         $this->getEntityManager()->persist($entity);
         $this->getEntityManager()->flush();
-
-        if (($isnew || $entity->needsFullParse) && !$entity->isArchived()) {
-            $entity->fullParse();
-            $entity->needsFullParse = false;
-        }
     }
 
     public function remove(Book $entity, bool $flush = false): void
@@ -74,10 +65,8 @@ class BookRepository extends ServiceEntityRepository
         $base_sql = "SELECT
           b.BkID As BkID,
           LgName,
-          BkTitle || case
-            when currtext.TxID is null then ''
-            else ' (' || currtext.TxOrder || '/' || pagecnt.c || ')'
-          end as BkTitle,
+          BkTitle,
+          case when currtext.TxID is null then 1 else currtext.TxOrder end as PageNum,
           pagecnt.c as PageCount,
           BkArchived,
           tags.taglist AS TagList,

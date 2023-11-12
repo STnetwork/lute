@@ -111,7 +111,6 @@ class ReadingFacade {
         $uniques = array_unique($words, SORT_STRING);
 
         $lang =$text->getLanguage();
-        $tid = $text->getID();
 
         $batchSize = 100;
         $i = 0;
@@ -133,14 +132,6 @@ class ReadingFacade {
         $b = $text->getBook();
         $b->setCurrentTextID($text->getId());
         $this->bookrepo->save($b, true);
-    }
-
-    public function get_prev_next(Text $text) {
-        return $this->textrepo->get_prev_next($text);
-    }
-
-    public function get_prev_next_by_10(Text $text) {
-        return $this->textrepo->get_prev_next_by_10($text);
     }
 
     /**

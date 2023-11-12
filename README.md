@@ -1,7 +1,22 @@
+# DEPRECATED
+
+**This version of Lute is obsolete and will no longer be maintained.  Instead, please use [Lute v3](https://github.com/jzohrab/lute-v3)**
+
+Lute v3 is a full Python rewrite of Lute.  Installation is _much_ easier, and all the features have been ported.
+
+- [Install Lute v3](https://jzohrab.github.io/lute-manual/install.html)
+- [lute-v3 repository](https://github.com/jzohrab/lute-v3) and [manual](https://jzohrab.github.io/lute-manual/intro.html)
+- If you have Lute v2, you can easily [migrate to v3](https://jzohrab.github.io/lute-manual/v2-to-v3.html).
+  
+_Thank you!_
+
+---
+
 # LUTE - Learning Using Texts
 
 [![CI master](https://github.com/jzohrab/lute/actions/workflows/symfony-ci.yml/badge.svg?branch=master)](https://github.com/jzohrab/lute/actions/workflows/symfony-ci.yml?query=branch%3Amaster)
 [![Discord Server](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/CzFUQP5m8u)
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
 This is a fork and ground-up rewrite of Learning with Texts, for learning foreign languages through reading.  You install Lute on your computer, import texts, and annotate terms.
 

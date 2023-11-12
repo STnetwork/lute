@@ -14,7 +14,7 @@ final class TermRepository_Test extends DatabaseTestBase
         $this->load_languages();
     }
     
-    public function test_save()
+    public function test_save()  // V3-port: DONE in test/orm
     {
         DbHelpers::assertRecordcountEquals("select * from words", 0, "no terms");
         $t = new Term($this->spanish, 'perro');
@@ -22,7 +22,7 @@ final class TermRepository_Test extends DatabaseTestBase
         DbHelpers::assertRecordcountEquals("select * from words", 1, "saved");
     }
 
-    public function test_remove()
+    public function test_remove()  // V3-port: DONE in test/orm
     {
         DbHelpers::assertRecordcountEquals("select * from words", 0, "no terms");
         $t = new Term($this->spanish, 'perro');
@@ -32,7 +32,7 @@ final class TermRepository_Test extends DatabaseTestBase
         DbHelpers::assertRecordcountEquals("select * from words", 0, "no terms, removed");
     }
 
-    public function test_flush()
+    public function test_flush()  // V3-port: DONE - not required
     {
         DbHelpers::assertRecordcountEquals("select * from words", 0, "no terms");
         $t = new Term($this->spanish, 'perro');
@@ -43,7 +43,7 @@ final class TermRepository_Test extends DatabaseTestBase
 
     }
 
-    public function test_create_and_save()
+    public function test_create_and_save()  // V3-port: DONE - not required
     {
         $t = new Term($this->spanish, 'HOLA');
         $t->setStatus(1);
@@ -58,7 +58,7 @@ final class TermRepository_Test extends DatabaseTestBase
         DbHelpers::assertTableContains($sql, $expected, "sanity check on save");
     }
 
-    public function test_word_with_parent_and_tags()
+    public function test_word_with_parent_and_tags()  // V3-port: DONE in test orm term
     {
         $t = new Term($this->spanish, "HOLA");
         $p = new Term($this->spanish, "PARENT");
@@ -86,7 +86,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group getParentAndChildren
      */
-    public function test_word_parent_get_child()
+    public function test_word_parent_get_child()  // V3-port: DONE in term orm term
     {
         $t = new Term($this->spanish, "HOLA");
         $g = new Term($this->spanish, "gato");
@@ -110,7 +110,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group changeParent
      */
-    public function test_change_parent()
+    public function test_change_parent()  // V3-port: DONE - not relevant
     {
         $t = new Term($this->spanish, "HOLA");
         $p = new Term($this->spanish, "PARENT");
@@ -135,7 +135,7 @@ final class TermRepository_Test extends DatabaseTestBase
         DbHelpers::assertTableContains($sql, $exp, "parent changed");
     }
 
-    public function test_set_parent_to_NULL()
+    public function test_set_parent_to_NULL()  // V3-port: DONE - n/a
     {
         $t = new Term($this->spanish, "HOLA");
         $p = new Term($this->spanish, "PARENT");
@@ -160,7 +160,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group termremove
      */
-    public function test_remove_parent_leaves_children_in_db()
+    public function test_remove_parent_leaves_children_in_db()  // V3-port: DONE - in test orm test_term
     {
         $t = new Term($this->spanish, "HOLA");
         $p = new Term($this->spanish, "PARENT");
@@ -187,7 +187,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group termremove
      */
-    public function test_can_remove_term_leaves_parent_and_existing_tags()
+    public function test_can_remove_term_leaves_parent_and_existing_tags()  // V3-port: DONE - in test orm term_term
     {
         $t = new Term($this->spanish, "HOLA");
         $t->addTermTag($this->termtag_repo->findOrCreateByText('tag'));
@@ -213,7 +213,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group images
      */
-    public function test_save_with_image()
+    public function test_save_with_image()  // V3-port: DONE - n/a
     {
         $t = new Term($this->spanish, "HOLA");
         $t->setCurrentImage('hello.png');
@@ -229,7 +229,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group images
      */
-    public function test_save_replace_image()
+    public function test_save_replace_image()  // V3-port: DONE test orm term
     {
         $t = new Term($this->spanish, "HOLA");
         $t->setCurrentImage('hello.png');
@@ -251,7 +251,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group images
      */
-    public function test_save_remove_image()
+    public function test_save_remove_image()  // V3-port: DONE test orm term
     {
         $t = new Term($this->spanish, "HOLA");
         $t->setCurrentImage('hello.png');
@@ -270,90 +270,11 @@ final class TermRepository_Test extends DatabaseTestBase
         DbHelpers::assertTableContains($sql, $exp, "image removed");
     }
 
-    private function assertFindLikeSpecReturns($s, $expected) {
-        $spec = new Term($this->spanish, $s);
-        $ret = $this->term_repo->findLikeSpecification($spec);
-        $this->assertEquals(count($expected), count($ret), $s . " count");
-        $actual = join(', ', array_map(fn($t) => $t->getText(), $ret));
-        $this->assertEquals(join(', ', $expected), $actual, $s . ' ' . $actual);
-    }
-
-    /**
-     * @group findLikeSpec
-     */
-    public function test_findLikeSpecification_initial_check() {
-        $t1 = new Term($this->spanish, "abc");
-        $t2 = new Term($this->spanish, "abcd");
-        $t3 = new Term($this->spanish, "bcd");
-        $this->term_repo->save($t1, true);
-        $this->term_repo->save($t2, true);
-        $this->term_repo->save($t3, true);
-
-        $this->assertFindLikeSpecReturns('ab', [ 'abc', 'abcd' ]);
-        $this->assertFindLikeSpecReturns('abcd', [ 'abcd' ]);
-        $this->assertFindLikeSpecReturns('bc', [ 'bcd' ]);
-        $this->assertFindLikeSpecReturns('yy', [ ]);
-    }
-
-    /**
-     * @group findLikeSpec
-     */
-    public function test_findLikeSpecification_terms_with_children_go_to_top() {
-        $ap = new Term($this->spanish, "abcPAR");
-        $a = new Term($this->spanish, "abc");
-        $xp = new Term($this->spanish, "axyPAR");
-        $x = new Term($this->spanish, "axy");
-        $a->addParent($ap);
-        $x->addParent($xp);
-        $this->term_repo->save($ap, true);
-        $this->term_repo->save($a, true);
-        $this->term_repo->save($xp, true);
-        $this->term_repo->save($x, true);
-
-        $this->assertFindLikeSpecReturns('a', [ 'abcPAR', 'axyPAR', 'abc', 'axy' ]);
-    }
-
-    /**
-     * @group findLikeSpec
-     */
-    public function test_findLikeSpecification_exact_match_trumps_parent() {
-        $ap = new Term($this->spanish, "abcPAR");
-        $a = new Term($this->spanish, "abc");
-        $xp = new Term($this->spanish, "axyPAR");
-        $x = new Term($this->spanish, "axy");
-        $a->addParent($ap);
-        $x->addParent($xp);
-        $this->term_repo->save($ap, true);
-        $this->term_repo->save($a, true);
-        $this->term_repo->save($xp, true);
-        $this->term_repo->save($x, true);
-
-        $this->assertFindLikeSpecReturns('abc', [ 'abc', 'abcPAR' ]);
-    }
-
-    /**
-     * @group findByID
-     */
-    public function test_findBy_array_of_ids() {
-        $a = new Term($this->spanish, "a");
-        $b = new Term($this->spanish, "b");
-        $c = new Term($this->spanish, "c");
-        $d = new Term($this->spanish, "d");
-        $this->term_repo->save($a, true);
-        $this->term_repo->save($b, true);
-        $this->term_repo->save($c, true);
-        $this->term_repo->save($d, true);
-
-        $ids = [ $a->getId(), $b->getId(), $c->getId() ];
-        $terms = $this->term_repo->findBy(['id' => $ids]);
-        // dump($terms);
-        $this->assertEquals(3, count($terms), "3 terms returned");
-    }
 
     /**
      * @group termflash
      */
-    public function test_term_flash_message_mapping() {
+    public function test_term_flash_message_mapping() {  // V3-port: DONE test_Term orm flash_message
         $p = new Term($this->spanish, 'perro');
         $this->assertEquals($p->getFlashMessage(), null, "message not set");
 
@@ -380,7 +301,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group termflash
      */
-    public function test_can_change_flash_message() {
+    public function test_can_change_flash_message() {  // V3-port: DONE
         $p = new Term($this->spanish, 'perro');
         $p->setFlashMessage('hola');
         $this->term_repo->save($p, true);
@@ -400,7 +321,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group termflash
      */
-    public function test_can_delete_term_with_flash_message() {
+    public function test_can_delete_term_with_flash_message() {  // V3-port: DONE test orm test_term
         $p = new Term($this->spanish, 'perro');
         $p->setFlashMessage('hola');
         $this->term_repo->save($p, true);
@@ -414,7 +335,7 @@ final class TermRepository_Test extends DatabaseTestBase
     /**
      * @group termflashremoval_1
      */
-    public function test_term_flash_can_be_removed() {
+    public function test_term_flash_can_be_removed() {  // V3-port: DONE test orm test_term
         $p = new Term($this->spanish, 'perro');
         $p->setFlashMessage('hola');
         $this->term_repo->save($p, true);
@@ -441,5 +362,89 @@ final class TermRepository_Test extends DatabaseTestBase
     //
     // term set current image - downloads if possible (use /public/img/lute.png for tests?)
     // remove term leaves its image in images folder
+
+
+    /* FIND TESTS ***************************/
+
+
+    private function assertFindLikeSpecReturns($s, $expected) {
+        $spec = new Term($this->spanish, $s);
+        $ret = $this->term_repo->findLikeSpecification($spec);
+        $this->assertEquals(count($expected), count($ret), $s . " count");
+        $actual = join(', ', array_map(fn($t) => $t->getText(), $ret));
+        $this->assertEquals(join(', ', $expected), $actual, $s . ' ' . $actual);
+    }
+
+    /**
+     * @group findLikeSpec
+     */
+    public function test_findLikeSpecification_initial_check() {  // V3-port: DONE test_Repository
+        $t1 = new Term($this->spanish, "abc");
+        $t2 = new Term($this->spanish, "abcd");
+        $t3 = new Term($this->spanish, "bcd");
+        $this->term_repo->save($t1, true);
+        $this->term_repo->save($t2, true);
+        $this->term_repo->save($t3, true);
+
+        $this->assertFindLikeSpecReturns('ab', [ 'abc', 'abcd' ]);
+        $this->assertFindLikeSpecReturns('abcd', [ 'abcd' ]);
+        $this->assertFindLikeSpecReturns('bc', [ 'bcd' ]);
+        $this->assertFindLikeSpecReturns('yy', [ ]);
+    }
+
+    /**
+     * @group findLikeSpec
+     */
+    public function test_findLikeSpecification_terms_with_children_go_to_top() {  // V3-port: DONE test_Repository
+        $ap = new Term($this->spanish, "abcPAR");
+        $a = new Term($this->spanish, "abc");
+        $xp = new Term($this->spanish, "axyPAR");
+        $x = new Term($this->spanish, "axy");
+        $a->addParent($ap);
+        $x->addParent($xp);
+        $this->term_repo->save($ap, true);
+        $this->term_repo->save($a, true);
+        $this->term_repo->save($xp, true);
+        $this->term_repo->save($x, true);
+
+        $this->assertFindLikeSpecReturns('a', [ 'abcPAR', 'axyPAR', 'abc', 'axy' ]);
+    }
+
+    /**
+     * @group findLikeSpec
+     */
+    public function test_findLikeSpecification_exact_match_trumps_parent() {  // V3-port: DONE test_Repository
+        $ap = new Term($this->spanish, "abcPAR");
+        $a = new Term($this->spanish, "abc");
+        $xp = new Term($this->spanish, "axyPAR");
+        $x = new Term($this->spanish, "axy");
+        $a->addParent($ap);
+        $x->addParent($xp);
+        $this->term_repo->save($ap, true);
+        $this->term_repo->save($a, true);
+        $this->term_repo->save($xp, true);
+        $this->term_repo->save($x, true);
+
+        $this->assertFindLikeSpecReturns('abc', [ 'abc', 'abcPAR' ]);
+    }
+
+    /**
+     * @group findByID
+     */
+    public function test_findBy_array_of_ids() {  // V3-port: DONE skipping
+        $a = new Term($this->spanish, "a");
+        $b = new Term($this->spanish, "b");
+        $c = new Term($this->spanish, "c");
+        $d = new Term($this->spanish, "d");
+        $this->term_repo->save($a, true);
+        $this->term_repo->save($b, true);
+        $this->term_repo->save($c, true);
+        $this->term_repo->save($d, true);
+
+        $ids = [ $a->getId(), $b->getId(), $c->getId() ];
+        $terms = $this->term_repo->findBy(['id' => $ids]);
+        // dump($terms);
+        $this->assertEquals(3, count($terms), "3 terms returned");
+    }
 
 }

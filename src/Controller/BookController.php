@@ -59,18 +59,6 @@ class BookController extends AbstractController
     }
 
 
-    #[Route('/read/{BkID}', name: 'app_book_read', methods: ['GET'])]
-    public function read(Request $request, Book $book): Response
-    {
-        $currtxid = $book->getCurrentTextID();
-        if ($currtxid == 0) {
-            $text = $book->getTexts()[0];
-            $currtxid = $text->getId();
-        }
-        return $this->redirectToRoute('app_read', [ 'TxID' => $currtxid ], Response::HTTP_SEE_OTHER);
-    }
-
-
     private function processNewForm(
         \Symfony\Component\Form\Form $form,
         Request $request,
@@ -98,7 +86,7 @@ class BookController extends AbstractController
         try {
             $book = $bookdto->createBook();
             $book_repo->save($book, true);
-            return $this->redirectToRoute('app_book_read', [ 'BkID' => $book->getId() ], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_read', [ 'BkID' => $book->getId(), 'pagenum' => 1 ], Response::HTTP_SEE_OTHER);
         }
         catch (\Exception $e) {
             $msg = "Error on save: " . $e->getMessage();
@@ -223,21 +211,6 @@ class BookController extends AbstractController
         $bookRepository->save($book, true);
         return $this->redirectToRoute('app_book_archived', [], Response::HTTP_SEE_OTHER);
     }
-
-    #[Route('/{BkID}/reparse', name: 'app_book_reparse', methods: ['POST'])]
-    public function reparse(Request $request, Book $book, BookRepository $bookRepository): Response
-    {
-        // TODO:security - CSRF token for datatables actions.
-        // $tok = $request->request->get('_token');
-        // if ($this->isCsrfTokenValid('archive'.$book->getID(), $tok)) {
-        //     $book->setArchived(true);
-        //     $bookRepository->save($book, true);
-        // }
-        $book->reparse();
-        $bookRepository->save($book, true);
-        return $this->redirectToRoute('app_index', [], Response::HTTP_SEE_OTHER);
-    }
-
 
     private function processEditForm(
         \Symfony\Component\Form\Form $form,
